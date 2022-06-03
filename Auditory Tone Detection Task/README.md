@@ -20,12 +20,14 @@ Task difficulty (tone volume) is updated based on the QUEST algorithm/method (Wa
 You will also need to change experiment configurations, e.g. the size of stimuli or number of trials. The number of trials is set in the 'welcome' routine's 'welcome_code' code component, while other configurations are made directly through the various PsychoPy components that are used.
 
 ## Pre-experiment calibration
-Note that, for this experiment to run correctly, it is _absolutely necessary_ that you first run the Headphone Calibration PsychoPy 'experiment'. This calibration 'experiment' is included in the [GitHub code repository](https://github.com/AnonZebra/Open-source-Auditory-Tone-Detection-Task) (see the subdirectory 'Headphone Calibration'). The calibration should result in a value that's used, roughly, to inform PsychoPy what volume setting on the computer corresponds to producing 80dB sound through the physical speakers. This experiment extrapolates from the calibration information to produce sound at correct volumes.
+Note that, for this experiment to run correctly, it is _absolutely necessary_ that you first run the Headphone Calibration PsychoPy 'experiment'. This calibration 'experiment' is included in the [GitHub code repository](https://github.com/AnonZebra/Open-source-Auditory-Tone-Detection-Task) (see the subdirectory 'Headphone Calibration'). The calibration should result in a value that's used, roughly, to inform PsychoPy what volume setting on the computer corresponds to producing 60dB sound through the physical speakers. This experiment extrapolates from the calibration information to produce sound at correct volumes.
 
 Once you've run the Headphone Calibration 'experiment' and have a calibration value:
 1. Open up 'pure_tone_detection.psyexp'.
 2. Click the cogwheel icon.
 3. In the 'Basic' tab, under 'Experiment info', update the 'Calibration' value.
+
+_Note_: If you have an anechoic chamber or similar very well isolated testing environment, you can likely achieve better accuracy by using a lower (e.g. 25dB) calibration volume. If you wish to do this, you need to replace all references to 60dB in this experiment as well as the Headphone Calibration 'experiment'. This is unfortunately a bit of a hassle, as such references are spread throughout the experiments.
 
 ## Translating the experiment
 All experiment instructions are specified in a code component.
