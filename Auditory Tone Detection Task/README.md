@@ -1,5 +1,5 @@
 # Auditory Tone Detection Task (forked)
- <img width="400px" src="example_images/atdt_intro_ex.png">
+ <img width="400px" src="example_images/atdt_intro_ex.png" alt="Example of instructions screen at beginning of experiment">
 
 This is a modified version of the Open Source Auditory Tone Detection Task experiment developed by Jason He, with modifications and corrections made by Lowe Wilsson for running the experiment at Karolinska Institutet. The original version/repository can be found [here](https://github.com/HeJasonL/Open-source-Auditory-Tone-Detection-Task). The experiment is created with [PsychoPy](https://psychopy.org/).
 
@@ -47,6 +47,10 @@ The most relevant output data files are the 'CSV'/'.csv' files, saved to the 'da
     - In order to ensure that the physically produced volume corresponds to desired dB values, the experiment relies on a correct audio calibration/configuration of the experiment having been done (see 'Pre-experiment calibration').
 * key_resp_trial.corr: indicates whether participant response was 'correct', 'incorrect', or there was 'no response' (for 'baseline' blocks, this column holds a 'baseline' value).
 
+If you use R, you might be interested in the RMarkdown document 'data_analysis/atdt_db_trends_analysis.Rmd', which includes code for collecting all participants' dB values in a single data frame and visualizing participants' dB trends. An example of what this visualization can look like is shown below.
+
+ <img width="400px" src="example_images/atdt_dbtrends_ex.png" alt="Example of visualization of participants' dB trends">
+
 ## Corrections
 Corrections to the experiment setup and procedure were made based on general information on audiometrics/audiometry and information in the official [PsychoPy book](https://uk.sagepub.com/en-gb/eur/building-experiments-in-psychopy/book253480) regarding staircase procedures, specifically the QUEST staircase.
 
@@ -63,10 +67,10 @@ The 'pThreshold' value is much less straight-forward of a concept, but was set t
 You might wish to tweak the 'questConditionsFile.xlsx' values based on how good the sound isolation in the testing environment is, and whether you wish to focus on pure auditory threshold ('Quiet' condition) measurement or on trials with masking ('Simultaneous'/'Backwards').
 
 ## Attribution
-As mentioned above, this is a modified version of an experiment developed by Jason He, during collaboration with Nicolaas Puts. The code repository for this modified version can also be found [on GitHub](https://github.com/AnonZebra/Open-source-Auditory-Tone-Detection-Task). Modifications were made by Lowe Wilsson, while working for Janina Neufeld at Karolinska Institutet. As of yet, no article describing the experiment has been published. In the meantime, if you use this modified version in a study, please include links to both the [original](https://github.com/HeJasonL/Open-source-Auditory-Tone-Detection-Task) and this modified version's code repositories.
+As mentioned above, this is a modified version of an experiment that was developed by Jason He while working in Nicolaas Puts research group at King’s College London. The code repository for this modified version can also be found [on GitHub](https://github.com/AnonZebra/Open-source-Auditory-Tone-Detection-Task). Modifications were made by Lowe Wilsson, while working for Janina Neufeld at Karolinska Institutet. As of yet, no article describing the experiment has been published. In the meantime, if you use this modified version in a study, please include links to both the [original](https://github.com/HeJasonL/Open-source-Auditory-Tone-Detection-Task) and this modified version's code repositories.
 
 ## Error reporting
-If you notice any problems with the experiment even after following the instructions above, please create a GitHub issue on this project's [repository](https://github.com/AnonZebra/Open-source-Auditory-Tone-Detection-Task).
+If you notice any problems with the experiment even after following the instructions above for configuration et c., please create a GitHub issue on this project's [repository](https://github.com/AnonZebra/Open-source-Auditory-Tone-Detection-Task).
 
 ## References
 Watson, A. B., & Pelli, D. G. (1983). Quest: A Bayesian adaptive psychometric method. Perception & Psychophysics, 33(2), 113–120. https://doi.org/10.3758/BF03202828

@@ -1,0 +1,177 @@
+---
+title: "ATDT Experiment Data dB Trends"
+author: "Lowe Wilsson"
+date: '2022-06-03'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This script is for analyzing Auditory Tone Detection Task experiment data.
+
+## Load necessary libraries
+Install any missing libraries before running this.
+```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+## Load data
+Set current working directory to where this notebook is located and specify (relative) path to the directory which holds all of the experiment data CSV files.
+
+```{r}
+directory_this_document <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(directory_this_document)
+DATA_DIR_PATH <- '../data'
+```
+
+Get a vector of all the CSV file names.
+
+```{r}
+data_filenames <- list.files(DATA_DIR_PATH)
+# use regular expression to only keep CSV file names
+data_filenames <- grep(".csv", data_filenames, value=TRUE)
+```
+
+Extract the participant id's from the filenames (here assuming that ID's do __not__ include any underscores) and combine them with timestamps to form participant 'codes' that will be used as 'keys' in list formed further down.
+
+```{r}
+part_ids <- gsub('([^_]*)_.*', '\\1', data_filenames)
+part_codes <- gsub('([^_]*).+pure_tone_detection_(.*).csv', '\\1_\\2', data_filenames)
+```
+
+Keep only data files and participant codes from experiment runs where a non-blank participant ID was specified.
+
+```{r}
+nonblank_bool <- part_ids != ""
+part_codes <- part_codes[nonblank_bool]
+data_filenames <- data_filenames[nonblank_bool]
+```
+
+Load all of the data, putting each set in a data frame and collecting all data frames in a list.
+
+```{r}
+df_list <- list()
+# loop over all data filenames
+for (i in 1:length(data_filenames)) {
+  # form full (directory path + filename) file path
+  data_path <- file.path(DATA_DIR_PATH, data_filenames[i])
+  part_id <- part_codes[i]
+  df_list[[part_id]] <- read.csv(data_path, stringsAsFactors = FALSE)
+}
+```
+
+## Collect all participants' dB data in a single 'long' data frame
+Form a single data frame which holds _all_ 'desired dB' values, trial numbers, and participant ID's.
+
+```{r}
+# extract the dB and 'trial number' values from only 
+# the rows of each data frame that have non-NA 'Desired_dB' values
+# and are of 'Test' trialType
+extract_nonna_db <- function(df) {
+  db_vals <- df[['Desired_dB']]
+  trial_vals <- df[['Trial']]
+  ttype_vals <-  df[['trialType']]
+  nonvalidtrial_bool <- is.na(db_vals) | is.na(trial_vals) | (ttype_vals != 'Test')
+  db_vals <- db_vals[! nonvalidtrial_bool]
+  trial_vals <- trial_vals[! nonvalidtrial_bool]
+  return(list(db=db_vals, trial_num=trial_vals))
+}
+valdb_trialno_list <- lapply(df_list, extract_nonna_db)
+
+# form a vector of all participants' trial 'desired dB' values
+all_db_vals <- Reduce(
+  function(x, y) c(x, y),
+  lapply(valdb_trialno_list, function(x) {x[['db']]})
+)
+# form a vector of all participants' trial numbers
+all_trial_nums <- Reduce(
+  function(x, y) c(x, y),
+  lapply(valdb_trialno_list, function(x) {x[['trial_num']]})
+)
+
+# form a vector which describes how many trials each participant went through
+trials_per_participant <- sapply(
+  lapply(valdb_trialno_list, function(x) {x[['trial_num']]}),
+  max
+)
+
+# form a vector of participant id's, where each id is repeated based
+# on the number of trials that the participant went through
+all_pids <- rep(part_codes, times=trials_per_participant)
+
+db_trial_df <- data.frame(
+  participant_id=all_pids,
+  trial_num=all_trial_nums,
+  db=all_db_vals
+)
+```
+
+## Visualize all participants' dB trends
+Draw a plot which describes _all_ participants' 'desired dB' trends.
+
+```{r}
+ggplot(db_trial_df, aes(x=trial_num, y=db, color=participant_id)) +
+  geom_line() +
+  guides(color="none")
+```
+
+## Exclude participants with too few trials
+Get the ID's of all participants who had 20 (limit arbitrarily chosen) or fewer trials.
+```{r}
+toofew_ids <- part_codes[trials_per_participant <= 20]
+toofew_ids
+```
+
+Exclude participants with too few trials from further analysis.
+
+```{r}
+db_trial_gte30_df <- db_trial_df[!(db_trial_df$participant_id %in% toofew_ids), ]
+```
+
+Redraw the plot, excluding participants with too few trials.
+
+```{r}
+ggplot(db_trial_gte30_df, aes(x=trial_num, y=db, color=participant_id)) +
+  geom_line() +
+  guides(color="none")
+```
+
+## Summary statistics
+The last trials' dB values should be fairly 'stable' and give reasonable estimates of participants' actual auditory thresholds. Thus, for each participant, use only the last 5 trials' dB values to calculate their auditory threshold. Then, calculate _group_ mean auditory threshold and standard deviation (based on each participant's 'mean-of-last-5-values').
+
+```{r}
+summary_df <- db_trial_gte30_df %>%
+  group_by(participant_id) %>%
+  slice_tail(n=5) %>%
+  summarise(db_mean_participant=mean(db)) %>%
+  ungroup() %>%
+  summarise(
+    db_mean=mean(db_mean_participant, na.rm=TRUE),
+    db_sd=sd(db_mean_participant, na.rm=TRUE),
+    n_participants=n()
+  )
+summary_df
+```
+
+The mean auditory threshold then was `r round(summary_df %>% pull('db_mean'), 2)` (SD=`r round(summary_df %>% pull('db_sd'), 2)`), based on data from `r summary_df %>% pull('n_participants')` participants.
+
+We can do the same analysis again, but excluding outliers who have thresholds above 30dB, indicating that they probably didn't perform the experiment as expected and/or the experiment, e.g. participant answered randomly and/or audio wasn't correctly played.
+
+```{r}
+summary_df_sansoutliers <- db_trial_gte30_df %>%
+  group_by(participant_id) %>%
+  slice_tail(n=10) %>%
+  summarise(db_mean_participant=mean(db)) %>%
+  filter(db_mean_participant <= 30) %>%
+  ungroup() %>%
+  summarise(
+    db_mean=mean(db_mean_participant, na.rm=TRUE),
+    db_sd=sd(db_mean_participant, na.rm=TRUE),
+    n_participants=n()
+  )
+summary_df_sansoutliers
+```
+
