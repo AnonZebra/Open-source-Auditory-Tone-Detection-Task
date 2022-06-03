@@ -52,7 +52,7 @@ INSTRUCT_TXT6 = (
 
 INSTRUCT_TXT7 = (
     "It is your job to decide which light bulb made "
-    "the noise by responding your the number pad."
+    "the noise by responding with the number keys."
 )
 
 INSTRUCT_TXT8 = (
@@ -68,7 +68,7 @@ BEGIN_PRACTICE_TXT = (
 # (put empty string, "", if you don't want any message
 # to be displayed during ISI)
 ISI_TXT = (
-    "ISI"
+    "PAUSE"
 )
 
 # feedback messages displayed depending on participant
